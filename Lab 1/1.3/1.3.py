@@ -3,6 +3,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, r2_score
 
 def my_lin_calculate_coefficients(data, x_ind, y_ind):
     n = len(data)-1
@@ -35,6 +36,30 @@ def my_lin_regression(x_train, y_train, x_test):
         my_lin_predictions.append((coeffs[0] + coeffs[1]*x)[0])
     return [my_lin_predictions,coeffs]
 
+def my_mean_absolute_error(y_test, y_pred):
+    sum = 0
+    for i in range(len(y_pred)):
+        sum += abs(y_test[i]-y_pred[i])
+    return sum/len(y_pred)
+
+def my_r2_score(y_test, y_pred):
+    SSE = 0
+    SST = 0
+    avg_y = sum(y_test)/len(y_test)
+
+    for i in range(len(y_pred)):
+        SSE += (y_test[i] - y_pred[i])**2
+        SST += (y_test[i] - avg_y) ** 2
+
+    return 1 - SSE/SST
+
+def my_mean_absolute_percentage_error(y_test, y_pred):
+    sum = 0
+    for i in range(len(y_pred)):
+        sum += abs(y_test[i] - y_pred[i])/y_test[i]
+    return sum / len(y_pred)
+
+
 def main():
     diabetes = datasets.load_diabetes()
 
@@ -54,7 +79,6 @@ def main():
     my_lin_coeffs = my_reg[1]
     my_lin_predictions = my_reg[0]
 
-
     #Выводы
     print("Resulting model functions")
     print(f"sklearn: {sl_reg.intercept_:.2f} + x * {sl_reg.coef_[0]:.2f}")
@@ -65,6 +89,17 @@ def main():
     print('x    real_y  sklearn_y   my_lin_y')
     for i in range(n):
         print(f'{x_test[i][0]:.2f}    {y_test[i]:.2f}  {sl_predictions[i]:.2f}   {my_lin_predictions[i]:.2f}')
+
+    #Метрики
+    print('\nSklearn model metrics:')
+    print(f"MAE: {mean_absolute_error(y_test, sl_predictions):.2f}")
+    print(f"R2: {r2_score(y_test, sl_predictions):.2f}")
+    print(f"MAPE: {mean_absolute_percentage_error(y_test, sl_predictions)*100:.2f}%")
+
+    print('\nMy model metrics:')
+    print(f"MAE: {my_mean_absolute_error(y_test, my_lin_predictions):.2f}")
+    print(f"R2: {my_r2_score(y_test, my_lin_predictions):.2f}")
+    print(f"MAPE: {my_mean_absolute_percentage_error(y_test, my_lin_predictions) * 100:.2f}%")
 
     #Отрисовка
     plt.figure(figsize = (16,8))
